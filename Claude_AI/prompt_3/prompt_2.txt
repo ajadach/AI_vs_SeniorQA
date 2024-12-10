@@ -1,0 +1,114 @@
+Resource        resources/common.robot
+Resource        resources/text_box_page.robot
+Resource        resources/check_box_page.robot
+
+resource powinny być zaimplementowane w pythonie
+
+
+
+
+# Struktura projektu:
+# demoqa_project/
+#   ├── pages/
+#   │   ├── base_page.py
+#   │   ├── text_box_page.py
+#   │   └── check_box_page.py
+#   ├── locators/
+#   │   ├── text_box_locators.py
+#   │   └── check_box_locators.py
+#   └── tests/
+#       └── demoqa_elements_tests.robot
+
+# locators/text_box_locators.py
+class TextBoxLocators:
+    MENU = "xpath=//span[contains(text(), 'Text Box')]"
+    FULL_NAME_INPUT = "id=userName"
+    EMAIL_INPUT = "id=userEmail"
+    CURRENT_ADDRESS_INPUT = "id=currentAddress"
+    PERMANENT_ADDRESS_INPUT = "id=permanentAddress"
+    SUBMIT_BUTTON = "id=submit"
+    OUTPUT_NAME = "xpath=//p[@id='name']"
+
+# locators/check_box_locators.py
+class CheckBoxLocators:
+    MENU = "xpath=//span[contains(text(), 'Check Box')]"
+    HOME_EXPAND_BTN = "xpath=//button[@title='Toggle']"
+    HOME_CHECKBOX = "xpath=//label[@for='tree-node-home']//span[@class='rct-checkbox']"
+    RESULT_TEXT = "id=result"
+
+# pages/base_page.py
+from robot.libraries.BuiltIn import BuiltIn
+
+class BasePage:
+    def __init__(self):
+        self.selenium = BuiltIn().get_library_instance('SeleniumLibrary')
+
+    def click_element(self, locator):
+        self.selenium.click_element(locator)
+
+    def input_text(self, locator, text):
+        self.selenium.input_text(locator, text)
+
+    def get_text(self, locator):
+        return self.selenium.get_text(locator)
+
+# pages/text_box_page.py
+from pages.base_page import BasePage
+from locators.text_box_locators import TextBoxLocators
+
+class TextBoxPage(BasePage):
+    def navigate_to(self):
+        self.click_element(TextBoxLocators.MENU)
+
+    def fill_form(self, full_name, email, current_address, permanent_address):
+        self.input_text(TextBoxLocators.FULL_NAME_INPUT, full_name)
+        self.input_text(TextBoxLocators.EMAIL_INPUT, email)
+        self.input_text(TextBoxLocators.CURRENT_ADDRESS_INPUT, current_address)
+        self.input_text(TextBoxLocators.PERMANENT_ADDRESS_INPUT, permanent_address)
+        self.click_element(TextBoxLocators.SUBMIT_BUTTON)
+
+    def get_output_name(self):
+        return self.get_text(TextBoxLocators.OUTPUT_NAME)
+
+# pages/check_box_page.py
+from pages.base_page import BasePage
+from locators.check_box_locators import CheckBoxLocators
+
+class CheckBoxPage(BasePage):
+    def navigate_to(self):
+        self.click_element(CheckBoxLocators.MENU)
+
+    def expand_home_directory(self):
+        self.click_element(CheckBoxLocators.HOME_EXPAND_BTN)
+
+    def select_home_checkbox(self):
+        self.click_element(CheckBoxLocators.HOME_CHECKBOX)
+
+    def get_result_text(self):
+        return self.get_text(CheckBoxLocators.RESULT_TEXT)
+
+# tests/demoqa_elements_tests.robot
+*** Settings ***
+Library     SeleniumLibrary
+Library     pages/text_box_page.py
+Library     pages/check_box_page.py
+
+Suite Setup     Open Browser    https://demoqa.com/elements    chrome
+Suite Teardown  Close Browser
+
+*** Test Cases ***
+Text Box Submission Test
+    ${text_box_page}=    TextBoxPage
+    ${text_box_page.navigate_to}
+    ${text_box_page.fill_form}    Jan Kowalski    jan.kowalski@example.com    Adres 1    Adres 2
+    ${output_name}=    ${text_box_page.get_output_name}
+    Should Contain    ${output_name}    Jan Kowalski
+
+Check Box Selection Test
+    ${check_box_page}=    CheckBoxPage
+    ${check_box_page.navigate_to}
+    ${check_box_page.expand_home_directory}
+    ${check_box_page.select_home_checkbox}
+    ${result_text}=    ${check_box_page.get_result_text}
+    Should Contain    ${result_text}    desktop
+    Should Contain    ${result_text}    documents

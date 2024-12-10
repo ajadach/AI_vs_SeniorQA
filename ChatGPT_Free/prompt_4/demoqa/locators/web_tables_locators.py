@@ -1,0 +1,12 @@
+class WebTablesLocators:
+    ADD_BUTTON = "id:addNewRecordButton"
+    EDIT_BUTTON = "xpath://span[text()='{}']/following-sibling::span[@title='Edit']"
+    DELETE_BUTTON = "xpath://span[text()='{}']/following-sibling::span[@title='Delete']"
+    ROWS = "css:.rt-tr-group"
+    FIRST_NAME_FIELD = "id:firstName"
+    LAST_NAME_FIELD = "id:lastName"
+    EMAIL_FIELD = "id:userEmail"
+    AGE_FIELD = "id:age"
+    SALARY_FIELD = "id:salary"
+    DEPARTMENT_FIELD = "id:department"
+    SUBMIT_BUTTON = "id:submit"

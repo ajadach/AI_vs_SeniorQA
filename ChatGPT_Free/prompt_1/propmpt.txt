@@ -1,0 +1,143 @@
+przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+
+ChatGPT powiedział:
+ChatGPT
+Tworzenie biblioteki w Pythonie bazującej na Page Object Pattern dla strony demoqa.com wymaga organizacji kodu, która oddziela logikę testów od logiki interakcji z elementami strony. Oto propozycja takiej biblioteki:
+
+Struktura projektu
+bash
+Skopiuj kod
+/demoqa_page_objects
+    __init__.py
+    base_page.py
+    home_page.py
+    elements_page.py
+/tests
+    test_demoqa.py
+requirements.txt
+1. Plik base_page.py
+Klasa bazowa, która dostarcza ogólne metody dla każdej strony.
+
+python
+Skopiuj kod
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class BasePage:
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 10)
+
+    def open(self, url):
+        """Otwiera stronę o podanym URL."""
+        self.driver.get(url)
+
+    def find_element(self, locator):
+        """Znajduje pojedynczy element."""
+        return self.wait.until(EC.visibility_of_element_located(locator))
+
+    def click_element(self, locator):
+        """Kliknięcie w element."""
+        element = self.find_element(locator)
+        element.click()
+
+    def enter_text(self, locator, text):
+        """Wpisuje tekst do pola."""
+        element = self.find_element(locator)
+        element.clear()
+        element.send_keys(text)
+2. Plik home_page.py
+Page Object dla strony głównej.
+
+python
+Skopiuj kod
+from demoqa_page_objects.base_page import BasePage
+from selenium.webdriver.common.by import By
+
+class HomePage(BasePage):
+    ELEMENTS_CARD = (By.XPATH, "//h5[text()='Elements']")
+
+    def navigate_to_elements(self):
+        """Przejście do sekcji 'Elements'."""
+        self.click_element(self.ELEMENTS_CARD)
+3. Plik elements_page.py
+Page Object dla sekcji "Elements".
+
+python
+Skopiuj kod
+from demoqa_page_objects.base_page import BasePage
+from selenium.webdriver.common.by import By
+
+class ElementsPage(BasePage):
+    TEXT_BOX_MENU = (By.ID, "item-0")
+    FULL_NAME_FIELD = (By.ID, "userName")
+    EMAIL_FIELD = (By.ID, "userEmail")
+    SUBMIT_BUTTON = (By.ID, "submit")
+    OUTPUT_TEXT = (By.ID, "output")
+
+    def open_text_box(self):
+        """Przejście do Text Box."""
+        self.click_element(self.TEXT_BOX_MENU)
+
+    def fill_text_box(self, name, email):
+        """Wypełnienie formularza Text Box."""
+        self.enter_text(self.FULL_NAME_FIELD, name)
+        self.enter_text(self.EMAIL_FIELD, email)
+        self.click_element(self.SUBMIT_BUTTON)
+
+    def get_output_text(self):
+        """Pobiera tekst z sekcji wyników."""
+        return self.find_element(self.OUTPUT_TEXT).text
+4. Plik test_demoqa.py
+Przykładowy test, który wykorzystuje Page Object Pattern.
+
+python
+Skopiuj kod
+import unittest
+from selenium import webdriver
+from demoqa_page_objects.home_page import HomePage
+from demoqa_page_objects.elements_page import ElementsPage
+
+class DemoQATests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.driver = webdriver.Chrome()
+        cls.driver.maximize_window()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
+
+    def test_text_box_submission(self):
+        home_page = HomePage(self.driver)
+        elements_page = ElementsPage(self.driver)
+
+        home_page.open("https://demoqa.com/")
+        home_page.navigate_to_elements()
+
+        elements_page.open_text_box()
+        elements_page.fill_text_box("John Doe", "johndoe@example.com")
+
+        output_text = elements_page.get_output_text()
+        self.assertIn("John Doe", output_text)
+        self.assertIn("johndoe@example.com", output_text)
+
+if __name__ == "__main__":
+    unittest.main()
+5. Plik requirements.txt
+Zależności projektu.
+
+makefile
+Skopiuj kod
+selenium==4.10.0
+Jak uruchomić?
+Zainstaluj wymagane pakiety:
+bash
+Skopiuj kod
+pip install -r requirements.txt
+Uruchom test:
+bash
+Skopiuj kod
+python -m unittest tests/test_demoqa.py
+To podejście organizuje kod w modularny sposób, ułatwiając rozwój i utrzymanie testów. Możesz dodawać kolejne strony jako osobne klasy w katalogu page_objects.

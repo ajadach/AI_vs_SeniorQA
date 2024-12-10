@@ -1,0 +1,12 @@
+class WebTablesLocators:
+    ADD_BUTTON = "//button[@id='addNewRecordButton']"
+    EDIT_BUTTON = "//span[text()='{}']/ancestor::div[contains(@class,'rt-tr-group')]//span[@title='Edit']"
+    DELETE_BUTTON = "//span[text()='{}']/ancestor::div[contains(@class,'rt-tr-group')]//span[@title='Delete']"
+    ROWS = "//div[contains(@class,'rt-tr-group')]"
+    FIRST_NAME_FIELD = "//input[@id='firstName']"
+    LAST_NAME_FIELD = "//input[@id='lastName']"
+    EMAIL_FIELD = "//input[@id='userEmail']"
+    AGE_FIELD = "//input[@id='age']"
+    SALARY_FIELD = "//input[@id='salary']"
+    DEPARTMENT_FIELD = "//input[@id='department']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
