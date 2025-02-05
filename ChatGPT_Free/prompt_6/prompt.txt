@@ -1,0 +1,162 @@
+============================================ PROMPT ============================================
+
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box, Check Box, Web Tables, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+Nazwy metod oprzyj o CRUD
+
+============================================ RESPONSE ============================================
+Oto struktura biblioteki w Pythonie bazującej na wzorcu Page Object Pattern dla strony DemoQA i wybranych podstron. Lokatory przechowujemy w osobnym folderze locators, a metody opieramy na operacjach CRUD.
+
+Struktura projektu:
+
+bash
+Kopiuj
+Edytuj
+/demoqa_page_object
+│── /locators
+│   ├── text_box_locators.py
+│   ├── check_box_locators.py
+│   ├── web_tables_locators.py
+│── /pages
+│   ├── base_page.py
+│   ├── text_box_page.py
+│   ├── check_box_page.py
+│   ├── web_tables_page.py
+│── conftest.py
+│── requirements.txt
+│── README.md
+Zacznijmy od podstawowych plików:
+
+1. Lokatory (folder /locators)
+text_box_locators.py
+python
+Kopiuj
+Edytuj
+class TextBoxLocators:
+    FULL_NAME = "//input[@id='userName']"
+    EMAIL = "//input[@id='userEmail']"
+    CURRENT_ADDRESS = "//textarea[@id='currentAddress']"
+    PERMANENT_ADDRESS = "//textarea[@id='permanentAddress']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
+    OUTPUT_NAME = "//p[@id='name']"
+    OUTPUT_EMAIL = "//p[@id='email']"
+check_box_locators.py
+python
+Kopiuj
+Edytuj
+class CheckBoxLocators:
+    EXPAND_ALL = "//button[@aria-label='Expand all']"
+    CHECKBOX_ITEM = "//span[contains(@class, 'rct-title') and text()='{}']"
+    TOGGLE_ITEM = "//span[contains(@class, 'rct-text') and text()='{}']/preceding-sibling::button"
+    CHECKED_ITEMS = "//span[contains(@class, 'rct-checkbox')]/input[@checked]"
+web_tables_locators.py
+python
+Kopiuj
+Edytuj
+class WebTablesLocators:
+    ADD_BUTTON = "//button[@id='addNewRecordButton']"
+    SEARCH_BOX = "//input[@id='searchBox']"
+    DELETE_BUTTON = "//span[@title='Delete']"
+    EDIT_BUTTON = "//span[@title='Edit']"
+    TABLE_ROWS = "//div[@class='rt-tr-group']"
+2. Klasa bazowa /pages/base_page.py
+python
+Kopiuj
+Edytuj
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class BasePage:
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 10)
+
+    def find(self, locator):
+        return self.wait.until(EC.presence_of_element_located(locator))
+
+    def click(self, locator):
+        self.find(locator).click()
+
+    def fill(self, locator, value):
+        element = self.find(locator)
+        element.clear()
+        element.send_keys(value)
+
+    def get_text(self, locator):
+        return self.find(locator).text
+3. Strony (folder /pages/)
+text_box_page.py
+python
+Kopiuj
+Edytuj
+from locators.text_box_locators import TextBoxLocators
+from pages.base_page import BasePage
+
+class TextBoxPage(BasePage):
+    def create(self, name, email, current_address, permanent_address):
+        self.fill(TextBoxLocators.FULL_NAME, name)
+        self.fill(TextBoxLocators.EMAIL, email)
+        self.fill(TextBoxLocators.CURRENT_ADDRESS, current_address)
+        self.fill(TextBoxLocators.PERMANENT_ADDRESS, permanent_address)
+        self.click(TextBoxLocators.SUBMIT_BUTTON)
+
+    def read(self):
+        return {
+            "name": self.get_text(TextBoxLocators.OUTPUT_NAME),
+            "email": self.get_text(TextBoxLocators.OUTPUT_EMAIL)
+        }
+check_box_page.py
+python
+Kopiuj
+Edytuj
+from locators.check_box_locators import CheckBoxLocators
+from pages.base_page import BasePage
+
+class CheckBoxPage(BasePage):
+    def create(self, item_name):
+        self.click(CheckBoxLocators.EXPAND_ALL)
+        self.click(CheckBoxLocators.CHECKBOX_ITEM.format(item_name))
+
+    def read(self):
+        return [item.text for item in self.driver.find_elements_by_xpath(CheckBoxLocators.CHECKED_ITEMS)]
+
+    def update(self, item_name):
+        self.click(CheckBoxLocators.TOGGLE_ITEM.format(item_name))
+
+    def delete(self, item_name):
+        self.click(CheckBoxLocators.CHECKBOX_ITEM.format(item_name))
+web_tables_page.py
+python
+Kopiuj
+Edytuj
+from locators.web_tables_locators import WebTablesLocators
+from pages.base_page import BasePage
+
+class WebTablesPage(BasePage):
+    def create(self):
+        self.click(WebTablesLocators.ADD_BUTTON)
+
+    def read(self):
+        return [row.text for row in self.driver.find_elements_by_xpath(WebTablesLocators.TABLE_ROWS)]
+
+    def update(self, row_index):
+        self.driver.find_elements_by_xpath(WebTablesLocators.EDIT_BUTTON)[row_index].click()
+
+    def delete(self, row_index):
+        self.driver.find_elements_by_xpath(WebTablesLocators.DELETE_BUTTON)[row_index].click()
+4. Konfiguracja Selenium (conftest.py)
+python
+Kopiuj
+Edytuj
+import pytest
+from selenium import webdriver
+
+@pytest.fixture(scope="function")
+def driver():
+    driver = webdriver.Chrome()
+    driver.get("https://demoqa.com/")
+    driver.maximize_window()
+    yield driver
+    driver.quit()
+To teraz mamy bibliotekę zgodną ze wzorcem Page Object Pattern dla podstron Text Box, Check Box i Web Tables.
+Każda klasa obsługuje CRUD, a lokatory są w osobnym folderze locators. 🚀

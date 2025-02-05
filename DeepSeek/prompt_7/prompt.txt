@@ -1,0 +1,224 @@
+============================================ PROMPT ============================================
+
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+Nazwy metod oprzyj o CRUD. API metod oprzyj za każdym razem o listę parametr wartość np. dla text box ['Full Name', 'Artur'].
+Dla odrczytywania elementów z UI używaj innerhtml i zwracaj dane w postaci python dictionary.
+
+============================================ RESPONSE ============================================
+Oto implementacja biblioteki w Pythonie opartej na wzorcu projektowym Page Object Pattern dla podstrony Text Box na stronie https://demoqa.com/. Lokatory są przechowywane w osobnym folderze locators w formacie XPath. Metody są oparte na operacjach CRUD, a ich API przyjmuje listę parametrów w formacie [nazwa_parametru, wartość]. Do odczytywania elementów z UI używamy innerHTML, a dane są zwracane w postaci słownika Pythona.
+
+Struktura projektu
+Copy
+demoqa_tests/
+│
+├── locators/
+│   └── text_box_locators.py
+│
+├── pages/
+│   ├── base_page.py
+│   └── text_box_page.py
+│
+└── tests/
+    └── test_text_box.py
+1. Lokatory
+locators/text_box_locators.py
+python
+Copy
+class TextBoxLocators:
+    # Input fields
+    FULL_NAME_INPUT = "//input[@id='userName']"
+    EMAIL_INPUT = "//input[@id='userEmail']"
+    CURRENT_ADDRESS_INPUT = "//textarea[@id='currentAddress']"
+    PERMANENT_ADDRESS_INPUT = "//textarea[@id='permanentAddress']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
+
+    # Output fields
+    OUTPUT_NAME = "//p[@id='name']"
+    OUTPUT_EMAIL = "//p[@id='email']"
+    OUTPUT_CURRENT_ADDRESS = "//p[@id='currentAddress']"
+    OUTPUT_PERMANENT_ADDRESS = "//p[@id='permanentAddress']"
+2. Strony
+pages/base_page.py
+python
+Copy
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class BasePage:
+    def __init__(self, driver):
+        self.driver = driver
+
+    def click(self, locator):
+        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.XPATH, locator))).click()
+
+    def send_keys(self, locator, text):
+        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, locator))).clear()
+        WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, locator))).send_keys(text)
+
+    def get_inner_html(self, locator):
+        element = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.XPATH, locator)))
+        return element.get_attribute("innerHTML")
+pages/text_box_page.py
+python
+Copy
+from .base_page import BasePage
+from locators.text_box_locators import TextBoxLocators
+
+class TextBoxPage(BasePage):
+    def __init__(self, driver):
+        super().__init__(driver)
+
+    def create(self, data):
+        """
+        Tworzy rekord w Text Box na podstawie listy parametrów.
+        :param data: Lista w formacie [nazwa_parametru, wartość], np. ['Full Name', 'Artur']
+        """
+        for param, value in data.items():
+            if param == "Full Name":
+                self.send_keys(TextBoxLocators.FULL_NAME_INPUT, value)
+            elif param == "Email":
+                self.send_keys(TextBoxLocators.EMAIL_INPUT, value)
+            elif param == "Current Address":
+                self.send_keys(TextBoxLocators.CURRENT_ADDRESS_INPUT, value)
+            elif param == "Permanent Address":
+                self.send_keys(TextBoxLocators.PERMANENT_ADDRESS_INPUT, value)
+        self.click(TextBoxLocators.SUBMIT_BUTTON)
+
+    def read(self):
+        """
+        Odczytuje dane z UI i zwraca je w postaci słownika.
+        """
+        output_data = {
+            "Name": self.get_inner_html(TextBoxLocators.OUTPUT_NAME).replace("Name:", "").strip(),
+            "Email": self.get_inner_html(TextBoxLocators.OUTPUT_EMAIL).replace("Email:", "").strip(),
+            "Current Address": self.get_inner_html(TextBoxLocators.OUTPUT_CURRENT_ADDRESS).replace("Current Address :", "").strip(),
+            "Permanent Address": self.get_inner_html(TextBoxLocators.OUTPUT_PERMANENT_ADDRESS).replace("Permanent Address :", "").strip(),
+        }
+        return output_data
+
+    def update(self, data):
+        """
+        Aktualizuje istniejący rekord w Text Box.
+        :param data: Lista w formacie [nazwa_parametru, wartość], np. ['Full Name', 'Nowe Imię']
+        """
+        self.create(data)
+
+    def delete(self):
+        """
+        Czyści wszystkie pola w Text Box.
+        """
+        self.send_keys(TextBoxLocators.FULL_NAME_INPUT, "")
+        self.send_keys(TextBoxLocators.EMAIL_INPUT, "")
+        self.send_keys(TextBoxLocators.CURRENT_ADDRESS_INPUT, "")
+        self.send_keys(TextBoxLocators.PERMANENT_ADDRESS_INPUT, "")
+3. Testy
+tests/test_text_box.py
+python
+Copy
+import pytest
+from selenium import webdriver
+from pages.text_box_page import TextBoxPage
+
+@pytest.fixture
+def driver():
+    driver = webdriver.Chrome()
+    driver.get("https://demoqa.com/text-box")
+    yield driver
+    driver.quit()
+
+def test_create_and_read_text_box(driver):
+    text_box_page = TextBoxPage(driver)
+
+    # Dane do wprowadzenia
+    input_data = {
+        "Full Name": "Artur",
+        "Email": "artur@example.com",
+        "Current Address": "123 Main St",
+        "Permanent Address": "456 Secondary St"
+    }
+
+    # Tworzenie rekordu
+    text_box_page.create(input_data)
+
+    # Odczytanie danych z UI
+    output_data = text_box_page.read()
+
+    # Sprawdzenie, czy dane się zgadzają
+    assert output_data["Name"] == "Artur"
+    assert output_data["Email"] == "artur@example.com"
+    assert output_data["Current Address"] == "123 Main St"
+    assert output_data["Permanent Address"] == "456 Secondary St"
+
+def test_update_text_box(driver):
+    text_box_page = TextBoxPage(driver)
+
+    # Dane początkowe
+    initial_data = {
+        "Full Name": "Artur",
+        "Email": "artur@example.com",
+        "Current Address": "123 Main St",
+        "Permanent Address": "456 Secondary St"
+    }
+
+    # Aktualizacja danych
+    updated_data = {
+        "Full Name": "Jan Kowalski",
+        "Email": "jan.kowalski@example.com",
+        "Current Address": "789 New St",
+        "Permanent Address": "101 Old St"
+    }
+
+    # Tworzenie rekordu
+    text_box_page.create(initial_data)
+
+    # Aktualizacja rekordu
+    text_box_page.update(updated_data)
+
+    # Odczytanie danych z UI
+    output_data = text_box_page.read()
+
+    # Sprawdzenie, czy dane zostały zaktualizowane
+    assert output_data["Name"] == "Jan Kowalski"
+    assert output_data["Email"] == "jan.kowalski@example.com"
+    assert output_data["Current Address"] == "789 New St"
+    assert output_data["Permanent Address"] == "101 Old St"
+
+def test_delete_text_box(driver):
+    text_box_page = TextBoxPage(driver)
+
+    # Dane do wprowadzenia
+    input_data = {
+        "Full Name": "Artur",
+        "Email": "artur@example.com",
+        "Current Address": "123 Main St",
+        "Permanent Address": "456 Secondary St"
+    }
+
+    # Tworzenie rekordu
+    text_box_page.create(input_data)
+
+    # Usunięcie rekordu
+    text_box_page.delete()
+
+    # Odczytanie danych z UI
+    output_data = text_box_page.read()
+
+    # Sprawdzenie, czy dane zostały usunięte
+    assert output_data["Name"] == ""
+    assert output_data["Email"] == ""
+    assert output_data["Current Address"] == ""
+    assert output_data["Permanent Address"] == ""
+Podsumowanie
+Lokatory: Przechowywane w osobnym folderze locators w formacie XPath.
+
+Metody CRUD: Każda operacja (Create, Read, Update, Delete) jest zaimplementowana w klasie TextBoxPage.
+
+API metod: Przyjmuje listę parametrów w formacie [nazwa_parametru, wartość].
+
+Odczyt danych: Używamy innerHTML do odczytu danych z UI, które są zwracane jako słownik Pythona.
+
+Testy: Przykładowe testy sprawdzają poprawność operacji CRUD.
+
+Ta struktura jest łatwa do rozszerzenia i utrzymania, a także zgodna z zasadami wzorca Page Object Pattern.

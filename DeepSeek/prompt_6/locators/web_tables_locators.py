@@ -1,0 +1,13 @@
+class WebTablesLocators:
+    ADD_BUTTON = "//button[@id='addNewRecordButton']"
+    FIRST_NAME_INPUT = "//input[@id='firstName']"
+    LAST_NAME_INPUT = "//input[@id='lastName']"
+    EMAIL_INPUT = "//input[@id='userEmail']"
+    AGE_INPUT = "//input[@id='age']"
+    SALARY_INPUT = "//input[@id='salary']"
+    DEPARTMENT_INPUT = "//input[@id='department']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
+    SEARCH_BOX = "//input[@id='searchBox']"
+    EDIT_BUTTON = "//span[@title='Edit']"
+    DELETE_BUTTON = "//span[@title='Delete']"
+    ROW_DATA = "//div[@class='rt-tr-group']"

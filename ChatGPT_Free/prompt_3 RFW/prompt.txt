@@ -1,0 +1,192 @@
+============================================ PROMPT ============================================
+
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern używając SeleniumLibrary dla strony https://demoqa.com/
+dla podstrony elements Text Box i Check Box
+
+============================================ RESPONSE ============================================
+Poniżej znajdziesz implementację biblioteki w Pythonie opartą na wzorcu Page Object Pattern z wykorzystaniem SeleniumLibrary dla strony demoqa.com. Obsługiwane są podstrony Elements > Text Box i Elements > Check Box.
+________________________________________
+Struktura projektu
+bash
+Skopiuj kod
+/demoqa_pages
+    __init__.py
+    base_page.py
+    elements_page.py
+    text_box_page.py
+    check_box_page.py
+/tests
+    test_text_box.robot
+    test_check_box.robot
+requirements.txt
+________________________________________
+1. Plik base_page.py
+Biblioteka bazowa zawierająca ogólne metody.
+python
+Skopiuj kod
+from SeleniumLibrary import SeleniumLibrary
+
+class BasePage(SeleniumLibrary):
+    def open_url(self, url):
+        """Otwiera podany URL."""
+        self.go_to(url)
+
+    def click_element(self, locator):
+        """Kliknięcie elementu."""
+        self.click_element(locator)
+
+    def enter_text(self, locator, text):
+        """Wprowadzenie tekstu do pola."""
+        self.input_text(locator, text)
+
+    def get_element_text(self, locator):
+        """Pobiera tekst elementu."""
+        return self.get_text(locator)
+________________________________________
+2. Plik elements_page.py
+Strona główna sekcji Elements, umożliwiająca nawigację.
+python
+Skopiuj kod
+from demoqa_pages.base_page import BasePage
+
+class ElementsPage(BasePage):
+    TEXT_BOX_MENU = "id:item-0"
+    CHECK_BOX_MENU = "id:item-1"
+
+    def navigate_to_text_box(self):
+        """Przejście do sekcji Text Box."""
+        self.click_element(self.TEXT_BOX_MENU)
+
+    def navigate_to_check_box(self):
+        """Przejście do sekcji Check Box."""
+        self.click_element(self.CHECK_BOX_MENU)
+________________________________________
+3. Plik text_box_page.py
+Obsługa formularza Text Box.
+python
+Skopiuj kod
+from demoqa_pages.base_page import BasePage
+
+class TextBoxPage(BasePage):
+    FULL_NAME_FIELD = "id:userName"
+    EMAIL_FIELD = "id:userEmail"
+    CURRENT_ADDRESS_FIELD = "id:currentAddress"
+    PERMANENT_ADDRESS_FIELD = "id:permanentAddress"
+    SUBMIT_BUTTON = "id:submit"
+    OUTPUT_SECTION = "id:output"
+
+    def fill_text_box_form(self, name, email, current_address, permanent_address):
+        """Wypełnia formularz Text Box."""
+        self.enter_text(self.FULL_NAME_FIELD, name)
+        self.enter_text(self.EMAIL_FIELD, email)
+        self.enter_text(self.CURRENT_ADDRESS_FIELD, current_address)
+        self.enter_text(self.PERMANENT_ADDRESS_FIELD, permanent_address)
+        self.click_element(self.SUBMIT_BUTTON)
+
+    def get_output_text(self):
+        """Pobiera tekst z wyników."""
+        return self.get_element_text(self.OUTPUT_SECTION)
+________________________________________
+4. Plik check_box_page.py
+Obsługa Check Box.
+python
+Skopiuj kod
+from demoqa_pages.base_page import BasePage
+
+class CheckBoxPage(BasePage):
+    TOGGLE_HOME = "css:.rct-icon.rct-icon-expand-close"
+    CHECK_DOCUMENTS = "xpath://label[@for='tree-node-documents']//span[@class='rct-checkbox']"
+    OUTPUT_SECTION = "id:result"
+
+    def expand_home(self):
+        """Rozwija katalog główny."""
+        self.click_element(self.TOGGLE_HOME)
+
+    def select_documents(self):
+        """Zaznacza opcję Documents."""
+        self.click_element(self.CHECK_DOCUMENTS)
+
+    def get_selected_items(self):
+        """Zwraca wybrane elementy."""
+        return self.get_element_text(self.OUTPUT_SECTION)
+________________________________________
+5. Testy w Robot Framework
+Test Text Box: test_text_box.robot
+robot
+Skopiuj kod
+*** Settings ***
+Library    SeleniumLibrary
+Library    demoqa_pages.elements_page.ElementsPage
+Library    demoqa_pages.text_box_page.TextBoxPage
+
+*** Variables ***
+${BASE_URL}    https://demoqa.com/elements
+
+*** Test Cases ***
+Fill Text Box Form
+    Open Browser    ${BASE_URL}    Chrome
+    Maximize Browser Window
+    Navigate To Text Box
+    Fill Text Box Form    John Doe    johndoe@example.com    123 Main St    456 Another St
+    ${output}=    Get Output Text
+    Should Contain    ${output}    John Doe
+    Should Contain    ${output}    johndoe@example.com
+    Close Browser
+________________________________________
+Test Check Box: test_check_box.robot
+robot
+Skopiuj kod
+*** Settings ***
+Library    SeleniumLibrary
+Library    demoqa_pages.elements_page.ElementsPage
+Library    demoqa_pages.check_box_page.CheckBoxPage
+
+*** Variables ***
+${BASE_URL}    https://demoqa.com/elements
+
+*** Test Cases ***
+Select Check Box
+    Open Browser    ${BASE_URL}    Chrome
+    Maximize Browser Window
+    Navigate To Check Box
+    Expand Home
+    Select Documents
+    ${output}=    Get Selected Items
+    Should Contain    ${output}    documents
+    Close Browser
+________________________________________
+6. Plik requirements.txt
+Zależności do instalacji:
+makefile
+Skopiuj kod
+robotframework==6.1
+robotframework-seleniumlibrary==6.0.0
+selenium==4.10.0
+________________________________________
+Instrukcja uruchomienia
+1.	Zainstaluj zależności:
+bash
+Skopiuj kod
+pip install -r requirements.txt
+2.	Uruchom testy:
+o	Test dla Text Box:
+bash
+Skopiuj kod
+robot tests/test_text_box.robot
+o	Test dla Check Box:
+bash
+Skopiuj kod
+robot tests/test_check_box.robot
+________________________________________
+Opis działania
+1.	Text Box:
+o	Otwiera sekcję Text Box.
+o	Wypełnia pola imienia, e-maila, aktualnego i stałego adresu.
+o	Sprawdza, czy dane zostały poprawnie wyświetlone w wynikach.
+2.	Check Box:
+o	Otwiera sekcję Check Box.
+o	Rozwija katalog główny.
+o	Zaznacza opcję Documents.
+o	Sprawdza, czy wybrane elementy pojawiają się w wynikach.
+Ta biblioteka i testy są modularne i łatwe do rozszerzenia o kolejne podstrony.
+

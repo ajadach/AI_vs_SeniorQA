@@ -1,0 +1,167 @@
+============================================ PROMPT ============================================
+
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+Nazwy metod oprzyj o CRUD. API metod oprzyj za każdym razem o listę parametr wartość np. dla text box ['Full Name', 'Artur'].
+Dla odrczytywania elementów z UI używaj innerhtml i zwracaj dane w postaci python dictionary.
+
+============================================ RESPONSE ============================================
+Oto przykładowa implementacja biblioteki w Pythonie zgodnej z Twoimi wymaganiami.
+
+Struktura projektu:
+Kopiuj
+Edytuj
+project/
+│── locators/
+│   └── text_box_locators.py
+│── pages/
+│   └── text_box_page.py
+│── tests/
+│   └── test_text_box.py
+│── conftest.py
+│── requirements.txt
+1. Lokatory (locators/text_box_locators.py)
+python
+Kopiuj
+Edytuj
+class TextBoxLocators:
+    FULL_NAME = "//input[@id='userName']"
+    EMAIL = "//input[@id='userEmail']"
+    CURRENT_ADDRESS = "//textarea[@id='currentAddress']"
+    PERMANENT_ADDRESS = "//textarea[@id='permanentAddress']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
+
+    OUTPUT_FULL_NAME = "//p[@id='name']"
+    OUTPUT_EMAIL = "//p[@id='email']"
+    OUTPUT_CURRENT_ADDRESS = "//p[@id='currentAddress']"
+    OUTPUT_PERMANENT_ADDRESS = "//p[@id='permanentAddress']"
+2. Klasa Page Object (pages/text_box_page.py)
+python
+Kopiuj
+Edytuj
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webdriver import WebDriver
+from locators.text_box_locators import TextBoxLocators
+
+class TextBoxPage:
+    def __init__(self, driver: WebDriver):
+        self.driver = driver
+
+    def create(self, data: list):
+        """
+        Wypełnia formularz Text Box na podstawie listy [parametr, wartość].
+        """
+        mapping = {
+            'Full Name': TextBoxLocators.FULL_NAME,
+            'Email': TextBoxLocators.EMAIL,
+            'Current Address': TextBoxLocators.CURRENT_ADDRESS,
+            'Permanent Address': TextBoxLocators.PERMANENT_ADDRESS
+        }
+        for param, value in data:
+            if param in mapping:
+                element = self.driver.find_element(By.XPATH, mapping[param])
+                element.clear()
+                element.send_keys(value)
+
+        # Kliknięcie przycisku Submit
+        self.driver.find_element(By.XPATH, TextBoxLocators.SUBMIT_BUTTON).click()
+
+    def read(self) -> dict:
+        """
+        Pobiera wartości wyświetlane na UI i zwraca je jako słownik.
+        """
+        output_mapping = {
+            'Full Name': TextBoxLocators.OUTPUT_FULL_NAME,
+            'Email': TextBoxLocators.OUTPUT_EMAIL,
+            'Current Address': TextBoxLocators.OUTPUT_CURRENT_ADDRESS,
+            'Permanent Address': TextBoxLocators.OUTPUT_PERMANENT_ADDRESS
+        }
+        result = {}
+
+        for key, locator in output_mapping.items():
+            element = self.driver.find_element(By.XPATH, locator)
+            result[key] = element.get_attribute("innerHTML").split(":")[1].strip() if element else None
+
+        return result
+
+    def update(self, data: list):
+        """
+        Aktualizuje wartości formularza, nadpisując istniejące dane.
+        """
+        self.create(data)
+
+    def delete(self):
+        """
+        Czyści wszystkie pola w formularzu.
+        """
+        self.create([
+            ['Full Name', ''],
+            ['Email', ''],
+            ['Current Address', ''],
+            ['Permanent Address', '']
+        ])
+3. Testy (tests/test_text_box.py)
+python
+Kopiuj
+Edytuj
+import pytest
+from selenium import webdriver
+from pages.text_box_page import TextBoxPage
+
+@pytest.fixture
+def driver():
+    driver = webdriver.Chrome()
+    driver.get("https://demoqa.com/text-box")
+    yield driver
+    driver.quit()
+
+def test_text_box_crud(driver):
+    page = TextBoxPage(driver)
+
+    data = [
+        ['Full Name', 'Artur'],
+        ['Email', 'artur@example.com'],
+        ['Current Address', 'Warsaw, Poland'],
+        ['Permanent Address', 'Cracow, Poland']
+    ]
+
+    # Create
+    page.create(data)
+
+    # Read
+    result = page.read()
+    assert result == {
+        'Full Name': 'Artur',
+        'Email': 'artur@example.com',
+        'Current Address': 'Warsaw, Poland',
+        'Permanent Address': 'Cracow, Poland'
+    }
+
+    # Update
+    updated_data = [['Full Name', 'Kamil']]
+    page.update(updated_data)
+    result = page.read()
+    assert result['Full Name'] == 'Kamil'
+
+    # Delete
+    page.delete()
+    result = page.read()
+    assert all(value == '' for value in result.values())
+4. Plik requirements.txt
+txt
+Kopiuj
+Edytuj
+selenium
+pytest
+Jak używać?
+Zainstaluj wymagane biblioteki:
+bash
+Kopiuj
+Edytuj
+pip install -r requirements.txt
+Uruchom testy:
+bash
+Kopiuj
+Edytuj
+pytest tests/test_text_box.py
+To powinno zapewnić w pełni działającą bibliotekę w oparciu o Page Object Pattern. 🚀

@@ -1,0 +1,27 @@
+============================================ PROMPT ============================================
+
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box, Check Box, Web Tables, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+Nazwy metod oprzyj o CRUD
+
+============================================ RESPONSE ============================================
+DemoQA Page Object Pattern FrameworkClick to open code
+Framework zawiera:
+
+Strukturę lokatorów XPath w osobnym pliku
+Bazową klasę z podstawowymi metodami
+Klasy stron z metodami CRUD:
+
+TextBoxPage
+CheckBoxPage
+WebTablesPage
+
+
+
+Przykład użycia:
+pythonCopy# Inicjalizacja
+driver = webdriver.Chrome()
+text_box_page = TextBoxPage(driver)
+
+# Utworzenie danych
+text_box_page.create_user_data("John Doe", "john@example.com", "Current Address", "Permanent Addr

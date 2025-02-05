@@ -1,0 +1,18 @@
+============================================ PROMPT ============================================
+
+przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box, Check Box, Web Tables, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+W Web Tables przyogtuj możliwość usuwania danych tabeli i ich edytowania.
+
+============================================ RESPONSE ============================================
+Page Object Pattern dla DemoQA
+Click to open code
+Struktura projektu została przygotowana zgodnie z Page Object Pattern. Główne cechy:
+1.	Osobne lokatory w folderze locators
+2.	Strony w folderze pages z bazową klasą BasePage
+3.	Metody dla Text Box, Check Box i Web Tables
+4.	Możliwość dodawania, edycji i usuwania rekordów w Web Tables
+Wymagane biblioteki:
+•	selenium
+•	pytest (opcjonalnie do testów)
+

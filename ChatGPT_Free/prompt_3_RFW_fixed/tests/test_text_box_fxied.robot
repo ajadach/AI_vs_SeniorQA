@@ -1,8 +1,10 @@
 *** Settings ***
 Library    SeleniumLibrary
+#Library    demoqa_pages.elements_page.ElementsPage
+#Library    demoqa_pages.text_box_page.TextBoxPage
+# import was like in python
 Library    ..${/}demoqa_pages${/}ElementsPage.py
 Library    ..${/}demoqa_pages${/}TextBoxPage.py
-
 *** Variables ***
 ${BASE_URL}    https://demoqa.com/elements
 

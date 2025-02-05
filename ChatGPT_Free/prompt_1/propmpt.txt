@@ -1,7 +1,8 @@
-przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+============================================ PROMPT ============================================
 
-ChatGPT powiedział:
-ChatGPT
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+
+============================================ RESPONSE ============================================
 Tworzenie biblioteki w Pythonie bazującej na Page Object Pattern dla strony demoqa.com wymaga organizacji kodu, która oddziela logikę testów od logiki interakcji z elementami strony. Oto propozycja takiej biblioteki:
 
 Struktura projektu

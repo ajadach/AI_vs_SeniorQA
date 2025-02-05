@@ -1,0 +1,134 @@
+============================================ PROMPT ============================================
+
+Przygotuj w jezyku python testy dla strony https://demoqa.com/ dla podstrony elements Text Box i Check Box
+
+============================================ RESPONSE ============================================
+Poniżej znajdziesz testy w Pythonie dla strony demoqa.com dla podstron Elements > Text Box i Elements > Check Box. Testy są napisane z użyciem biblioteki unittest i Selenium.
+________________________________________
+Struktura projektu
+bash
+Skopiuj kod
+/tests
+    test_text_box.py
+    test_check_box.py
+requirements.txt
+________________________________________
+1. Testy dla podstrony Text Box
+Plik: test_text_box.py
+python
+Skopiuj kod
+import unittest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+class TestTextBox(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Uruchamianie przeglądarki przed rozpoczęciem testów."""
+        cls.driver = webdriver.Chrome()
+        cls.driver.maximize_window()
+        cls.driver.get("https://demoqa.com/elements")
+
+    @classmethod
+    def tearDownClass(cls):
+        """Zamykanie przeglądarki po zakończeniu testów."""
+        cls.driver.quit()
+
+    def test_text_box_submission(self):
+        """Test wypełnienia formularza Text Box."""
+        # Przejdź do sekcji Text Box
+        text_box_button = self.driver.find_element(By.ID, "item-0")
+        text_box_button.click()
+
+        # Wypełnij formularz
+        self.driver.find_element(By.ID, "userName").send_keys("John Doe")
+        self.driver.find_element(By.ID, "userEmail").send_keys("johndoe@example.com")
+        self.driver.find_element(By.ID, "currentAddress").send_keys("123 Main Street")
+        self.driver.find_element(By.ID, "permanentAddress").send_keys("456 Another Street")
+        self.driver.find_element(By.ID, "submit").click()
+
+        # Sprawdź wyniki
+        output = self.driver.find_element(By.ID, "output").text
+        self.assertIn("John Doe", output)
+        self.assertIn("johndoe@example.com", output)
+        self.assertIn("123 Main Street", output)
+        self.assertIn("456 Another Street", output)
+
+if __name__ == "__main__":
+    unittest.main()
+________________________________________
+2. Testy dla podstrony Check Box
+Plik: test_check_box.py
+python
+Skopiuj kod
+import unittest
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+class TestCheckBox(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        """Uruchamianie przeglądarki przed rozpoczęciem testów."""
+        cls.driver = webdriver.Chrome()
+        cls.driver.maximize_window()
+        cls.driver.get("https://demoqa.com/elements")
+
+    @classmethod
+    def tearDownClass(cls):
+        """Zamykanie przeglądarki po zakończeniu testów."""
+        cls.driver.quit()
+
+    def test_check_box_selection(self):
+        """Test zaznaczenia opcji Documents w Check Box."""
+        # Przejdź do sekcji Check Box
+        check_box_button = self.driver.find_element(By.ID, "item-1")
+        check_box_button.click()
+
+        # Rozwiń katalog główny
+        toggle_home = self.driver.find_element(By.CSS_SELECTOR, ".rct-icon.rct-icon-expand-close")
+        toggle_home.click()
+
+        # Zaznacz opcję "Documents"
+        documents_checkbox = self.driver.find_element(By.XPATH, "//label[@for='tree-node-documents']//span[@class='rct-checkbox']")
+        documents_checkbox.click()
+
+        # Sprawdź, czy opcja "Documents" jest zaznaczona
+        result_output = self.driver.find_element(By.ID, "result").text
+        self.assertIn("documents", result_output.lower())
+
+if __name__ == "__main__":
+    unittest.main()
+________________________________________
+3. Plik requirements.txt
+Zależności projektu:
+makefile
+Skopiuj kod
+selenium==4.10.0
+________________________________________
+Uruchamianie testów
+1.	Zainstaluj Selenium:
+bash
+Skopiuj kod
+pip install -r requirements.txt
+2.	Uruchom testy:
+o	Test dla Text Box:
+bash
+Skopiuj kod
+python -m unittest tests/test_text_box.py
+o	Test dla Check Box:
+bash
+Skopiuj kod
+python -m unittest tests/test_check_box.py
+________________________________________
+Opis testów
+1.	Test Text Box:
+o	Otwiera sekcję Text Box.
+o	Wypełnia pola: pełne imię, e-mail, aktualny adres, stały adres.
+o	Sprawdza, czy wyświetlone wyniki zawierają wprowadzone dane.
+2.	Test Check Box:
+o	Otwiera sekcję Check Box.
+o	Rozwija katalog główny.
+o	Zaznacza opcję "Documents".
+o	Sprawdza, czy opcja "Documents" pojawiła się w wynikach.
+Testy zostały zaprojektowane tak, aby były łatwe w utrzymaniu i działały poprawnie na stronie demoqa.com.
+

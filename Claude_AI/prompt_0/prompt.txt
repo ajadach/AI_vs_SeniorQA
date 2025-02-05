@@ -1,0 +1,28 @@
+============================================ PROMPT ============================================
+
+Przygotuj w jezyku python testy dla strony https://demoqa.com/ dla podstrony elements Text Box i Check Box"
+
+============================================ RESPONSE ============================================
+Przygotuję testy automatyczne dla strony demoqa.com wykorzystując Selenium WebDriver w Pythonie,
+koncentrując się na podstronach Text Box i Check Box.
+
+Testy automatyczne dla demoqa.com
+Click to open code
+Wyjaśnienie testów:
+1.	Text Box - testy sprawdzają:
+•	Poprawne wprowadzenie danych
+•	Walidację adresu email
+2.	Check Box - testy weryfikują:
+•	Rozwijanie struktury katalogów
+•	Zaznaczanie pojedynczych elementów
+•	Zaznaczanie całej struktury
+Wymagane biblioteki:
+•	pytest
+•	selenium
+•	webdriver_manager
+Przed uruchomieniem należy zainstalować zależności:
+bash
+Copy
+pip install pytest selenium webdriver-manager
+Czy chcesz, żebym wyjaśnił szczegóły implementacji lub dodał więcej testów?
+

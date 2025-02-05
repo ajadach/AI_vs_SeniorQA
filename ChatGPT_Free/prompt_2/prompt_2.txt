@@ -1,0 +1,209 @@
+============================================ PROMPT ============================================
+
+Poniżej znajdziesz bibliotekę w Pythonie, która implementuje wzorzec projektowy Page Object Pattern dla podstrony Elements > Text Box i Check Box ze strony demoqa.com.
+________________________________________
+Struktura projektu
+bash
+Skopiuj kod
+/demoqa_page_objects
+    __init__.py
+    base_page.py
+    elements_page.py
+    text_box_page.py
+    check_box_page.py
+/tests
+    test_text_box.py
+    test_check_box.py
+requirements.txt
+________________________________________
+1. Plik base_page.py
+Klasa bazowa dostarczająca metody do obsługi elementów strony.
+python
+Skopiuj kod
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class BasePage:
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 10)
+
+    def open(self, url):
+        """Otwiera stronę o podanym URL."""
+        self.driver.get(url)
+
+    def find_element(self, locator):
+        """Znajduje pojedynczy element."""
+        return self.wait.until(EC.visibility_of_element_located(locator))
+
+    def click_element(self, locator):
+        """Kliknięcie w element."""
+        element = self.find_element(locator)
+        element.click()
+
+    def enter_text(self, locator, text):
+        """Wpisuje tekst do pola."""
+        element = self.find_element(locator)
+        element.clear()
+        element.send_keys(text)
+________________________________________
+2. Plik elements_page.py
+Klasa reprezentująca sekcję Elements.
+python
+Skopiuj kod
+from demoqa_page_objects.base_page import BasePage
+from selenium.webdriver.common.by import By
+
+class ElementsPage(BasePage):
+    TEXT_BOX_MENU = (By.ID, "item-0")
+    CHECK_BOX_MENU = (By.ID, "item-1")
+
+    def open_text_box(self):
+        """Przejście do sekcji Text Box."""
+        self.click_element(self.TEXT_BOX_MENU)
+
+    def open_check_box(self):
+        """Przejście do sekcji Check Box."""
+        self.click_element(self.CHECK_BOX_MENU)
+________________________________________
+3. Plik text_box_page.py
+Klasa obsługująca sekcję Text Box.
+python
+Skopiuj kod
+from demoqa_page_objects.base_page import BasePage
+from selenium.webdriver.common.by import By
+
+class TextBoxPage(BasePage):
+    FULL_NAME_FIELD = (By.ID, "userName")
+    EMAIL_FIELD = (By.ID, "userEmail")
+    CURRENT_ADDRESS_FIELD = (By.ID, "currentAddress")
+    PERMANENT_ADDRESS_FIELD = (By.ID, "permanentAddress")
+    SUBMIT_BUTTON = (By.ID, "submit")
+    OUTPUT_SECTION = (By.ID, "output")
+
+    def fill_form(self, name, email, current_address, permanent_address):
+        """Wypełnia formularz Text Box."""
+        self.enter_text(self.FULL_NAME_FIELD, name)
+        self.enter_text(self.EMAIL_FIELD, email)
+        self.enter_text(self.CURRENT_ADDRESS_FIELD, current_address)
+        self.enter_text(self.PERMANENT_ADDRESS_FIELD, permanent_address)
+        self.click_element(self.SUBMIT_BUTTON)
+
+    def get_output_text(self):
+        """Zwraca zawartość sekcji wyników."""
+        return self.find_element(self.OUTPUT_SECTION).text
+________________________________________
+4. Plik check_box_page.py
+Klasa obsługująca sekcję Check Box.
+python
+Skopiuj kod
+from demoqa_page_objects.base_page import BasePage
+from selenium.webdriver.common.by import By
+
+class CheckBoxPage(BasePage):
+    TOGGLE_HOME = (By.CSS_SELECTOR, ".rct-icon.rct-icon-expand-close")
+    CHECK_DOCUMENTS = (By.XPATH, "//label[@for='tree-node-documents']//span[@class='rct-checkbox']")
+    OUTPUT_SECTION = (By.ID, "result")
+
+    def expand_home_directory(self):
+        """Rozwija katalog główny."""
+        self.click_element(self.TOGGLE_HOME)
+
+    def select_documents(self):
+        """Zaznacza opcję Documents."""
+        self.click_element(self.CHECK_DOCUMENTS)
+
+    def get_selected_items(self):
+        """Zwraca wybrane elementy."""
+        return self.find_element(self.OUTPUT_SECTION).text
+________________________________________
+5. Testy
+Testy dla Text Box: test_text_box.py
+python
+Skopiuj kod
+import unittest
+from selenium import webdriver
+from demoqa_page_objects.elements_page import ElementsPage
+from demoqa_page_objects.text_box_page import TextBoxPage
+
+class TextBoxTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.driver = webdriver.Chrome()
+        cls.driver.maximize_window()
+        cls.driver.get("https://demoqa.com/elements")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
+
+    def test_text_box_submission(self):
+        elements_page = ElementsPage(self.driver)
+        text_box_page = TextBoxPage(self.driver)
+
+        elements_page.open_text_box()
+        text_box_page.fill_form(
+            name="John Doe",
+            email="johndoe@example.com",
+            current_address="123 Main St",
+            permanent_address="456 Another St"
+        )
+
+        output = text_box_page.get_output_text()
+        self.assertIn("John Doe", output)
+        self.assertIn("johndoe@example.com", output)
+
+if __name__ == "__main__":
+    unittest.main()
+Testy dla Check Box: test_check_box.py
+python
+Skopiuj kod
+import unittest
+from selenium import webdriver
+from demoqa_page_objects.elements_page import ElementsPage
+from demoqa_page_objects.check_box_page import CheckBoxPage
+
+class CheckBoxTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.driver = webdriver.Chrome()
+        cls.driver.maximize_window()
+        cls.driver.get("https://demoqa.com/elements")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
+
+    def test_check_box_selection(self):
+        elements_page = ElementsPage(self.driver)
+        check_box_page = CheckBoxPage(self.driver)
+
+        elements_page.open_check_box()
+        check_box_page.expand_home_directory()
+        check_box_page.select_documents()
+
+        output = check_box_page.get_selected_items()
+        self.assertIn("documents", output.lower())
+
+if __name__ == "__main__":
+    unittest.main()
+________________________________________
+6. Plik requirements.txt
+Zależności:
+makefile
+Skopiuj kod
+selenium==4.10.0
+________________________________________
+Uruchamianie testów
+1.	Zainstaluj Selenium:
+bash
+Skopiuj kod
+pip install -r requirements.txt
+2.	Uruchom testy:
+bash
+Skopiuj kod
+python -m unittest tests/test_text_box.py
+python -m unittest tests/test_check_box.py
+Ten projekt umożliwia łatwe zarządzanie testami dla podstron Text Box i Check Box, a dzięki Page Object Pattern kod jest modularny i łatwy w utrzymaniu.
+

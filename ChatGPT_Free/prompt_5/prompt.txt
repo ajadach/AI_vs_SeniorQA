@@ -1,0 +1,235 @@
+============================================ PROMPT ============================================
+
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box, Check Box, Web Tables, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+W Web Tables przyogtuj możliwość usuwania danych tabeli i ich edytowania.
+
+============================================ RESPONSE ============================================
+Oto implementacja biblioteki w Pythonie zgodnie z wzorcem Page Object Pattern dla strony demoqa.com, obsługującej sekcje Text Box, Check Box, oraz Web Tables z użyciem lokalizatorów opartych na XPath.
+________________________________________
+Struktura projektu
+bash
+Skopiuj kod
+/demoqa
+    /locators
+        __init__.py
+        elements_locators.py
+        text_box_locators.py
+        check_box_locators.py
+        web_tables_locators.py
+    /pages
+        __init__.py
+        base_page.py
+        elements_page.py
+        text_box_page.py
+        check_box_page.py
+        web_tables_page.py
+/tests
+    test_text_box.py
+    test_check_box.py
+    test_web_tables.py
+requirements.txt
+________________________________________
+1. Lokatory
+Plik: elements_locators.py
+python
+Skopiuj kod
+class ElementsLocators:
+    TEXT_BOX_MENU = "//span[text()='Text Box']"
+    CHECK_BOX_MENU = "//span[text()='Check Box']"
+    WEB_TABLES_MENU = "//span[text()='Web Tables']"
+________________________________________
+Plik: text_box_locators.py
+python
+Skopiuj kod
+class TextBoxLocators:
+    FULL_NAME_FIELD = "//input[@id='userName']"
+    EMAIL_FIELD = "//input[@id='userEmail']"
+    CURRENT_ADDRESS_FIELD = "//textarea[@id='currentAddress']"
+    PERMANENT_ADDRESS_FIELD = "//textarea[@id='permanentAddress']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
+    OUTPUT_SECTION = "//div[@id='output']"
+________________________________________
+Plik: check_box_locators.py
+python
+Skopiuj kod
+class CheckBoxLocators:
+    TOGGLE_HOME = "//span[@class='rct-text' and text()='Home']/preceding-sibling::button"
+    CHECK_DOCUMENTS = "//span[@class='rct-title' and text()='Documents']/preceding-sibling::span"
+    OUTPUT_SECTION = "//div[@id='result']"
+________________________________________
+Plik: web_tables_locators.py
+python
+Skopiuj kod
+class WebTablesLocators:
+    ADD_BUTTON = "//button[@id='addNewRecordButton']"
+    EDIT_BUTTON = "//span[text()='{}']/ancestor::div[contains(@class,'rt-tr-group')]//span[@title='Edit']"
+    DELETE_BUTTON = "//span[text()='{}']/ancestor::div[contains(@class,'rt-tr-group')]//span[@title='Delete']"
+    ROWS = "//div[contains(@class,'rt-tr-group')]"
+    FIRST_NAME_FIELD = "//input[@id='firstName']"
+    LAST_NAME_FIELD = "//input[@id='lastName']"
+    EMAIL_FIELD = "//input[@id='userEmail']"
+    AGE_FIELD = "//input[@id='age']"
+    SALARY_FIELD = "//input[@id='salary']"
+    DEPARTMENT_FIELD = "//input[@id='department']"
+    SUBMIT_BUTTON = "//button[@id='submit']"
+________________________________________
+2. Biblioteka stron
+Plik: base_page.py
+python
+Skopiuj kod
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+class BasePage:
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 10)
+
+    def open_url(self, url):
+        """Otwiera URL."""
+        self.driver.get(url)
+
+    def click_element(self, locator):
+        """Kliknięcie elementu."""
+        element = self.wait.until(EC.element_to_be_clickable((By.XPATH, locator)))
+        element.click()
+
+    def enter_text(self, locator, text):
+        """Wprowadzenie tekstu."""
+        element = self.wait.until(EC.visibility_of_element_located((By.XPATH, locator)))
+        element.clear()
+        element.send_keys(text)
+
+    def get_element_text(self, locator):
+        """Pobiera tekst elementu."""
+        element = self.wait.until(EC.visibility_of_element_located((By.XPATH, locator)))
+        return element.text
+
+    def get_dynamic_locator(self, template, *args):
+        """Zwraca dynamicznie wygenerowany lokator."""
+        return template.format(*args)
+________________________________________
+Plik: elements_page.py
+python
+Skopiuj kod
+from demoqa.pages.base_page import BasePage
+from demoqa.locators.elements_locators import ElementsLocators
+
+class ElementsPage(BasePage):
+    def navigate_to_text_box(self):
+        """Przejście do sekcji Text Box."""
+        self.click_element(ElementsLocators.TEXT_BOX_MENU)
+
+    def navigate_to_check_box(self):
+        """Przejście do sekcji Check Box."""
+        self.click_element(ElementsLocators.CHECK_BOX_MENU)
+
+    def navigate_to_web_tables(self):
+        """Przejście do sekcji Web Tables."""
+        self.click_element(ElementsLocators.WEB_TABLES_MENU)
+________________________________________
+Plik: text_box_page.py
+python
+Skopiuj kod
+from demoqa.pages.base_page import BasePage
+from demoqa.locators.text_box_locators import TextBoxLocators
+
+class TextBoxPage(BasePage):
+    def fill_text_box_form(self, name, email, current_address, permanent_address):
+        """Wypełnia formularz Text Box."""
+        self.enter_text(TextBoxLocators.FULL_NAME_FIELD, name)
+        self.enter_text(TextBoxLocators.EMAIL_FIELD, email)
+        self.enter_text(TextBoxLocators.CURRENT_ADDRESS_FIELD, current_address)
+        self.enter_text(TextBoxLocators.PERMANENT_ADDRESS_FIELD, permanent_address)
+        self.click_element(TextBoxLocators.SUBMIT_BUTTON)
+
+    def get_output_text(self):
+        """Pobiera tekst z wyników."""
+        return self.get_element_text(TextBoxLocators.OUTPUT_SECTION)
+________________________________________
+Plik: check_box_page.py
+python
+Skopiuj kod
+from demoqa.pages.base_page import BasePage
+from demoqa.locators.check_box_locators import CheckBoxLocators
+
+class CheckBoxPage(BasePage):
+    def expand_home(self):
+        """Rozwija katalog główny."""
+        self.click_element(CheckBoxLocators.TOGGLE_HOME)
+
+    def select_documents(self):
+        """Zaznacza opcję Documents."""
+        self.click_element(CheckBoxLocators.CHECK_DOCUMENTS)
+
+    def get_selected_items(self):
+        """Zwraca wybrane elementy."""
+        return self.get_element_text(CheckBoxLocators.OUTPUT_SECTION)
+________________________________________
+Plik: web_tables_page.py
+python
+Skopiuj kod
+from demoqa.pages.base_page import BasePage
+from demoqa.locators.web_tables_locators import WebTablesLocators
+
+class WebTablesPage(BasePage):
+    def delete_row(self, name):
+        """Usuwa wiersz na podstawie imienia."""
+        delete_button = self.get_dynamic_locator(WebTablesLocators.DELETE_BUTTON, name)
+        self.click_element(delete_button)
+
+    def edit_row(self, name, new_data):
+        """Edytuje wiersz na podstawie imienia."""
+        edit_button = self.get_dynamic_locator(WebTablesLocators.EDIT_BUTTON, name)
+        self.click_element(edit_button)
+
+        self.enter_text(WebTablesLocators.FIRST_NAME_FIELD, new_data["first_name"])
+        self.enter_text(WebTablesLocators.LAST_NAME_FIELD, new_data["last_name"])
+        self.enter_text(WebTablesLocators.EMAIL_FIELD, new_data["email"])
+        self.enter_text(WebTablesLocators.AGE_FIELD, new_data["age"])
+        self.enter_text(WebTablesLocators.SALARY_FIELD, new_data["salary"])
+        self.enter_text(WebTablesLocators.DEPARTMENT_FIELD, new_data["department"])
+        self.click_element(WebTablesLocators.SUBMIT_BUTTON)
+________________________________________
+3. Testy
+Przykładowy test dla Web Tables:
+python
+Skopiuj kod
+import unittest
+from selenium import webdriver
+from demoqa.pages.elements_page import ElementsPage
+from demoqa.pages.web_tables_page import WebTablesPage
+
+class TestWebTables(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.driver = webdriver.Chrome()
+        cls.driver.maximize_window()
+        cls.driver.get("https://demoqa.com/elements")
+        cls.elements_page = ElementsPage(cls.driver)
+        cls.web_tables_page = WebTablesPage(cls.driver)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.driver.quit()
+
+    def test_delete_row(self):
+        self.elements_page.navigate_to_web_tables()
+        self.web_tables_page.delete_row("Cierra")
+
+    def test_edit_row(self):
+        self.elements_page.navigate_to_web_tables()
+        self.web_tables_page.edit_row("Cierra", {
+            "first_name": "Updated",
+            "last_name": "Name",
+            "email": "updated@example.com",
+            "age": "35",
+            "salary": "10000",
+            "department": "HR"
+        })
+
+if __name__ == "__main__":
+    unittest.main()
+
