@@ -16,6 +16,7 @@ class WebTablesPage(BasePage):
         self.input_text(WebTablesLocators.SEARCH_BOX, search_term)
         return self.driver.page_source
 
+
     # wow używa search'a w tabeli!!
     def update_record(self, search_term, **updated_fields):
         self.input_text(WebTablesLocators.SEARCH_BOX, search_term)
