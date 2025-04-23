@@ -1,0 +1,28 @@
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box i Web Tables, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+Nazwy metod oprzyj o CRUD. API metod oprzyj za każdym razem o listę parametr wartość np. dla text box ['Full Name', 'Artur'].
+Dla odczytywania elementów z UI używaj innerhtml aby szczytać cały element html w celu unikęcia wielokrotnych zapytań za pomocą selenium. Wszystkie dane w postaci python dictionary.
+
++ dodano zapytanie
+
+popraw metody read, w API metody nie ma być xpath ani innych lokatorów, na poziomie biblioteki zdefniuj xpath odpowiadający za lokalizacje danych do odczytu
+
++ dodano zapytanie
+
+usuń wszystkie parametry z API, szczytaj całą zawartość tabeli za pomocą innerHTML uzywajać xpath="//*[@id="app"]/div/div/div/div[2]/div[2]/div[3]/div[1]/div[2]"
+
++ dodano zapytanie
+
+użyl lxml aby przeparsować output z table_element.get_attribute("innerHTML") a następnie każdy element zaprezentuj jako dictionary
+
++ dodano zapytanie
+
+use lxml library to parse the output from this function, for each element in root present it by dictionary
+
++ dodano zapytanie
+
+parse this output by lxml, use xpaths
+        xpath_headers = '//*[@id="app"]/div/div/div/div[2]/div[2]/div[3]/div[1]/div[1]'
+        xpath_data = '//*[@id="app"]/div/div/div/div[2]/div[2]/div[3]/div[1]/div[2]'
+
+parse output from usage xpath_headers as keys for dictionary, parse output from usage xpath_data as values for dictionary,
