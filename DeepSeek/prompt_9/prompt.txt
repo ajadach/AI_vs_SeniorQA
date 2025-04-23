@@ -1,0 +1,8 @@
+Przygotuj bibliotękę w pythonie bazując na wzorcu projektowym page object pattern dla strony https://demoqa.com/
+dla podstrony elements Text Box i Web Tables, a wszystkie lokatory trzymaj w osobnym folderze locators w formacie xpath.
+Każda klasa ma zawierać metody:
+1. navigate to page - w której nawigujemy od main page do odpowiednije subpage
+2. read_all_params - gdzię odczytujemy wszystkie dane które może odczytać urzytkownik.
+3. choose_parameters - API metody oprzyj za każdym razem o listę parametr wartość np. dla text box ['Full Name', 'Artur'].
+
+Wszystkie output które zwórci biblioteka powinny być w postaci python dicta
